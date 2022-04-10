@@ -6,6 +6,7 @@ use App\Http\Controllers\customerdash;
 use App\Http\Controllers\admindash;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\favcontroller;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +38,7 @@ Route::get('/admin/cupon',[admindash::class,'managecupon'])->name('cupon')->midd
 Route::post('/admin/cupon',[admindash::class,'cuponsubmit'])->name('cupon')->middleware('authorized');
 Route::get('/admin/cuponslist',[admindash::class,'managecuponlist'])->name('cuponslist')->middleware('authorized');
 Route::get('/admin/deletecupon/{id}',[admindash::class,'deletecupon'])->name('cupon.delete')->middleware('authorized');
+
 Route::get('/admin/slide',[admindash::class,'slide'])->name('admin.slide')->middleware('authorized');
 Route::post('/admin/slide',[admindash::class,'slideup'])->name('admin.slide')->middleware('authorized');
 Route::get('/admin/slidelist',[admindash::class,'slidelist'])->name('admin.slidelist')->middleware('authorized');
@@ -59,3 +61,5 @@ Route::post('/customer/medicinedetails/{id}/{name}',[OrderController::class, 'or
 
 Route::get('/admin/orderlist',[OrderController::class,'orderlist'])->name('order.list')->middleware('authorized');
 
+Route::post('/customer/add-to-fav',[favcontroller::class, 'addfev'])->name('fav')->middleware('authorized');
+//Route::post('/customer/add-to-fav/list',[favcontroller::class, 'addfevlist'])->name('fav.list')->middleware('authorized');

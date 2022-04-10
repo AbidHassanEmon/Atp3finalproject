@@ -1,10 +1,8 @@
-
-
 @extends('inc.layout')
 @section('content')
 @include('inc.navbarcus')
-
 <center>@if(Session::has('msg'))<span class="alert alert-info">{{Session::get('msg')}}</span>@endif</center>
+
 @foreach($pic as $m)
 <img src = "{{asset($m->image)}}" height = "300px" width = "410px">
 @endforeach

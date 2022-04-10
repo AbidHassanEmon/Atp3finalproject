@@ -93,5 +93,12 @@ class MedicineController extends Controller
         return view ('medicinedetails')->with('medicine',$medicine);
     }
 
+//search api
+    public function medicinesearch(Request $req){
+
+        $medicine = Medicine::where('name','like','%'.$req->name.'%')->get();
+        return $medicine;
+    }
+
 
 }

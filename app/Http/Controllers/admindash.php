@@ -6,12 +6,24 @@ use Illuminate\Http\Request;
 use App\Models\cupon;
 use App\Models\slide;
 use App\Models\customer;
+use App\Models\Order;
+use Illuminate\Support\Facades\DB;
 class admindash extends Controller
 {
     //
     public function adminhome()
     {
-        return view('homeadmin');
+        $orderData = Order::select(DB::raw("COUNT(*) as count"))
+                    ->whereYear('created_at', date('Y'))
+                    ->groupBy(DB::raw("Month(created_at)"))
+                    ->pluck('count');
+        $cusdata=customer::select(DB::raw("COUNT(*) as count"))
+                    ->whereYear('created_at', date('Y'))
+                    ->groupBy(DB::raw("Month(created_at)"))
+                    ->pluck('count');
+
+        return view('homeadmin',compact('orderData'))->with('cusdata',$cusdata);
+        //return $orderData;
     }
 
     public function slide()
@@ -27,8 +39,8 @@ class admindash extends Controller
         $req->validate(
             [
                 'name' => 'required|regex:/^[A-Z a-z.]+$/',
-                'username' => 'required|min:5|max:20|unique:admins,username',
-                'email' => 'required|email|unique:admins|email',
+                'username' => 'required|min:5|max:20',
+                'email' => 'required|email|email',
                 'phone' => 'required|min:11|regex:/^01[5-9]{1}[0-9]{8}$/',
                 'password' => 'required|min:3',
                 'confirm_password' => 'required|same:password',
@@ -56,13 +68,15 @@ class admindash extends Controller
         return view('cupon');
     }
 
+
     public function cuponsubmit(Request $st)
     {
         $this->validate($st,
         [
             'name'=>'required|max:20',
             'code'=>'required|min:4',
-            'dis'=>'required', 
+            'dis'=>'required',
+            'expired'=>'required', 
             'type'=>'required',
         ],
         [   'name.required'=>'Please provide username',
@@ -77,37 +91,79 @@ class admindash extends Controller
     $em->Name = $st->name;
     $em->code = $st->code;
     $em->Discount=$st->dis;
+    $em->expired=$st->expired;
     $em->type = $st->type;
     $em->save();
     
     if($em){
-        session()->flash('msg','Cupon code Added');
-        return redirect()->route('cuponslist');
 
+        $da=array("msg"=>"Coupon code Added Successfull");
+        return response()->json($da);
+    }
+    else 
+    {
+        $da=array("msg"=>"Coupon code Added Unsuccessfull");
+        return response()->json($da);
+    }
+
+}
+
+
+public function cuponupdate(Request $st)
+    {
+        $this->validate($st,
+        [
+            'name'=>'required|max:20',
+            'code'=>'required|min:4',
+            'dis'=>'required',
+            'expired'=>'required', 
+            'type'=>'required',
+        ]
+    );
+    
+    $em = cupon::where('ID',$st->id)
+    ->update(["Name" =>"$st->name","code" =>"$st->code",
+    "Discount" =>"$st->dis","expired" =>"$st->expired",
+    "type"=>"$st->type"]);
+    
+    
+    if($em){
+
+        $da=array("msg"=>"Coupon code Updated Successfull");
+        return response()->json($da);
+    }
+    else 
+    {
+        $da=array("msg"=>"Coupon code Updated Unsuccessfull");
+        return response()->json($da);
     }
 
     }
-
 
     public function managecuponlist()
     {
         $cupons = cupon::all();
-        return view('cuponslist')->with('cupons',$cupons);
+        return response()->json($cupons);
     }
 
 
     public function deletecupon(Request $req){
         $m = cupon::where('ID',$req->id)->delete();
         if($m){
-            session()->flash('msg','Succesfully Deleted');
-            return redirect()->route('cuponslist');
+            $da=array("msg"=>"Coupon deleted Successfull");
+            return response()->json($da);
             
+        }
+        else
+        {
+            $da=array("msg"=>"Coupon deleted Unsuccessfull");
+            return response()->json($da);
         }
     }
 
 
 
-    public function slideup(Request $st)
+public function slideup(Request $st)
     {
         $this->validate($st,
         [
@@ -119,7 +175,6 @@ class admindash extends Controller
         ]
     );
 
-    
     $filename = $st->name.'.'.$st->file('image')->getClientOriginalExtension();
     $st->file('image')->storeAs('public/slide',$filename);
     
@@ -129,28 +184,64 @@ class admindash extends Controller
         $ex->save();
 
         if($ex){
-            session()->flash('msg','slide Added');
-            return redirect()->route('admin.slidelist');
-
-    }
+            $da=array("msg"=>"Slide Added Successfull");
+            return response()->json($da);
+        }
+        else{
+            $da=array("msg"=>"Slide Added Unsuccessfull");
+            return response()->json($da);
+        }
 
 }
 
 
+public function slideupdate(Request $st)
+    {
+        $this->validate($st,
+        [
+            'name'=>'required|max:20',
+            'image' => 'required'
+        ],
+        [   'name.required'=>'Please provide username',
+            'username.max'=>'Username must not exceed 20 alphabets',   
+        ]
+    );
+
+    $filename = $st->name.'.'.$st->file('image')->getClientOriginalExtension();
+    $st->file('image')->storeAs('public/slide',$filename);
+    
+$ex =slide::where('ID',$st->id)->update(["Name" =>"$st->name","image"=>"storage/slide/".$filename]);
+        
+        if($ex){
+            $da=array("msg"=>"Slide Updated Successfull");
+            return response()->json($da);
+        }
+        else{
+            $da=array("msg"=>"Slide Updated Unsuccessfull");
+            return response()->json($da);
+        }
+
+}
+
 public function slidelist()
     {
         $slide = slide::all();
-        return view('slidelist')->with('slides',$slide);
+        return response()->json($slide);
     }
 
-    public function deleteslide(Request $req){
-        $m = slide::where('ID',$req->id)->delete();
-        if($m){
-            session()->flash('msg','Succesfully Deleted');
-            return redirect()->route('admin.slidelist');
-            
-        }
+
+public function deleteslide(Request $req){
+    $m = slide::where('ID',$req->id)->delete();
+    if($m){
+        $da=array("msg"=>"Slide deleted Successfull");
+        return response()->json($da);
     }
+    else
+    {
+        $da=array("msg"=>"Coupon deleted Unsuccessfull");
+        return response()->json($da);
+    }
+}
 
 
 }

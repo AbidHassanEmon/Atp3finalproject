@@ -6,7 +6,7 @@
 <br>
 <center>@if(Session::has('msg'))<span class="alert alert-info">{{Session::get('msg')}}</span>@endif</center>
 
-<a class="btn" href="cupon"><button type="button" class="btn btn-success">ADD CUPON</button></a>
+<a class="btn" href="cupon"><button type="button" class="btn btn-success">ADD COUPON</button></a>
 <br><br>
 
 <table class="table table-bordered">

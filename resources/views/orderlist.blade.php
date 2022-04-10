@@ -27,7 +27,7 @@
                     Updated At
                 </th>
                 <th>
-                    Created At
+                    Ordered At
                 </th>
             </tr>
             

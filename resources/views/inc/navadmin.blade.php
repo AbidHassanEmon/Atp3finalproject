@@ -17,7 +17,7 @@
         <a class="nav-link" href="slidelist">Manage Slide</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="cuponslist">Copons</a>
+        <a class="nav-link" href="cuponslist">Coupons</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="../Changepass">Change Password</a>

@@ -25,5 +25,11 @@
             <input type = "submit" class = "btn btn-success" value = "Place Order"></a>
         </form>
 
+        <form action = "{{route('fav')}}" method = "post">
+            {{csrf_field()}}
+            <input type = "hidden" name = "product_id" value={{$medicine->id}}>
+            <input type = "submit" class = "btn btn-primary" value = "ADD TO Favourite"></a>
+        </form>
+
         </center>
 @endsection
