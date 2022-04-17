@@ -7,6 +7,7 @@ use App\Models\cupon;
 use App\Models\slide;
 use App\Models\customer;
 use App\Models\Order;
+use Validator;
 use Illuminate\Support\Facades\DB;
 class admindash extends Controller
 {
@@ -22,8 +23,8 @@ class admindash extends Controller
                     ->groupBy(DB::raw("Month(created_at)"))
                     ->pluck('count');
 
-        return view('homeadmin',compact('orderData'))->with('cusdata',$cusdata);
-        //return $orderData;
+        //return view('homeadmin',compact('orderData'))->with('cusdata',$cusdata);
+        return $cusdata;
     }
 
     public function slide()
@@ -36,19 +37,25 @@ class admindash extends Controller
     }
 
     public function registersubmit(Request $req){
-        $req->validate(
+        $valid=Validator::make($req->all(),
             [
                 'name' => 'required|regex:/^[A-Z a-z.]+$/',
                 'username' => 'required|min:5|max:20',
-                'email' => 'required|email|email',
+                'email' => 'required|email',
                 'phone' => 'required|min:11|regex:/^01[5-9]{1}[0-9]{8}$/',
                 'password' => 'required|min:3',
-                'confirm_password' => 'required|same:password',
-                'image' => 'required'
-            ]
-        );
-        $filename = $req->username.'.'.$req->file('image')->getClientOriginalExtension();
-        $req->file('image')->storeAs('public/AdminImage',$filename);
+                'confirm_password' => 'required|same:password'
+                //,'image' => 'required'
+            ]);
+
+        if($valid->fails())
+        {
+            return response()->json(['error'=>$valid->errors()],405);
+        }
+
+            
+        //$filename = $req->username.'.'.$req->file('image')->getClientOriginalExtension();
+        //$req->file('image')->storeAs('public/AdminImage',$filename);
 
         $ad = new customer();
         $ad->name = $req->name;
@@ -56,11 +63,20 @@ class admindash extends Controller
         $ad->email = $req->email;
         $ad->phone = $req->phone;
         $ad->password = md5($req->password);
-        $ad->image = "storage/AdminImage/".$filename;
+        //$ad->image = "storage/AdminImage/".$filename;
         $ad->role='Admin';
-        $ad->save();
-        session()->flash('msg','Suucessfully Registered');
-        return  redirect()->route('registration');
+        $w=$ad->save();
+
+        if($w){
+            $da=array("msg"=>"Registration Successfull","st"=>true);
+            return response()->json($da);
+        }
+        else
+        {
+            $da=array("msg"=>"error","st"=>false);
+            return response()->json($da);
+        }
+        
     }
 
     public function managecupon()
@@ -71,21 +87,18 @@ class admindash extends Controller
 
     public function cuponsubmit(Request $st)
     {
-        $this->validate($st,
+        $valid=Validator::make($st->all(),
         [
             'name'=>'required|max:20',
             'code'=>'required|min:4',
             'dis'=>'required',
             'expired'=>'required', 
             'type'=>'required',
-        ],
-        [   'name.required'=>'Please provide username',
-            'username.max'=>'Username must not exceed 20 alphabets',
-            'code.required'=>'Please provide code',
-            'type.required'=>'Please provide cupon type',
-            'dis.required'=>'Please provide Discount Amount'
-        ]
-    );
+        ]);
+    if($valid->fails())
+    {
+        return response()->json(['error'=>$valid->errors()],401);
+    }
     
     $em = new cupon();
     $em->Name = $st->name;
@@ -111,15 +124,18 @@ class admindash extends Controller
 
 public function cuponupdate(Request $st)
     {
-        $this->validate($st,
+        $valid=Validator::make($st->all(),
         [
             'name'=>'required|max:20',
             'code'=>'required|min:4',
             'dis'=>'required',
             'expired'=>'required', 
             'type'=>'required',
-        ]
-    );
+        ]);
+    if($valid->fails())
+    {
+        return response()->json(['error'=>$valid->errors()],401);
+    }
     
     $em = cupon::where('ID',$st->id)
     ->update(["Name" =>"$st->name","code" =>"$st->code",
@@ -165,15 +181,15 @@ public function cuponupdate(Request $st)
 
 public function slideup(Request $st)
     {
-        $this->validate($st,
+        $valid=Validator::make($st->all(),
         [
             'name'=>'required|max:20',
-            'image' => 'required'
-        ],
-        [   'name.required'=>'Please provide username',
-            'username.max'=>'Username must not exceed 20 alphabets',   
-        ]
-    );
+            'image'=>'required'
+        ]);
+    if($valid->fails())
+    {
+        return response()->json(['error'=>$valid->errors()],401);
+    }
 
     $filename = $st->name.'.'.$st->file('image')->getClientOriginalExtension();
     $st->file('image')->storeAs('public/slide',$filename);
@@ -196,16 +212,17 @@ public function slideup(Request $st)
 
 
 public function slideupdate(Request $st)
-    {
-        $this->validate($st,
+    { 
+        $valid=Validator::make($st->all(),
         [
             'name'=>'required|max:20',
-            'image' => 'required'
-        ],
-        [   'name.required'=>'Please provide username',
-            'username.max'=>'Username must not exceed 20 alphabets',   
-        ]
-    );
+            'image'=>'required',
+            'id'=>'required'
+        ]);
+    if($valid->fails())
+    {
+        return response()->json(['error'=>$valid->errors()],401);
+    }
 
     $filename = $st->name.'.'.$st->file('image')->getClientOriginalExtension();
     $st->file('image')->storeAs('public/slide',$filename);

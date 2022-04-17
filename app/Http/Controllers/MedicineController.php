@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Validator;
 use Illuminate\Http\Request;
 use App\Models\Medicine;
 
@@ -14,7 +14,7 @@ class MedicineController extends Controller
 
     public function addmedicine(Request $req)
     {
-        $req->validate(
+        $valid=Validator::make($req->all(),
             [
                 'name' => 'required|unique:medicines,name',
                 'unit_price' => 'required',
@@ -23,6 +23,11 @@ class MedicineController extends Controller
                 'image' => 'required|mimes:jpg,png'
             ]
         );
+        if($valid->fails())
+    {
+        return response()->json(['error'=>$valid->errors()],401);
+    }
+
         $filename = $req->name.'.'.$req->file('image')->getClientOriginalExtension();
         $req->file('image')->storeAs('public/MedicineImage',$filename);
 
@@ -36,16 +41,21 @@ class MedicineController extends Controller
 
         if($m){
 
-            session()->flash('msg','Medicine Added successfull');
-            return redirect()->route('medicinelist');
-
-        }   
+        $da=array("msg"=>"Medicine Added Successfull");
+        return response()->json($da);
     }
+    else 
+    {
+        $da=array("msg"=>"Medicine Added Unsuccessfull");
+        return response()->json($da);
+    }
+}
 
-    public function listmedicine(){
+
+public function listmedicine(){
 
         $medicines = Medicine::all();
-        return view ('medicinelist')->with('medicines',$medicines);
+        return response()->json($medicines);
     
     }
 
@@ -53,8 +63,8 @@ class MedicineController extends Controller
     public function delete(Request $req){
         $m = Medicine::where('id',$req->id)->delete();
         if($m){
-            session()->flash('msg','Succesfully Deleted');
-            return redirect()->route('medicinelist');
+            $da=array("msg"=>"Medicine delete Successfull");
+            return response()->json($da);
             
         }
     }
@@ -65,7 +75,7 @@ class MedicineController extends Controller
     }
 
     public function updatemedicine(Request $req){
-        $req->validate(
+        $valid=Validator::make($req->all(),
             [
                 'name' => 'required',
                 'unit_price' => 'required',
@@ -73,6 +83,10 @@ class MedicineController extends Controller
                 'description' =>'required'
             ]
         );
+        if($valid->fails())
+        {
+            return response()->json(['error'=>$valid->errors()],401);
+        }
 
         $m = Medicine::where('id',$req->id)->first();
         $m->name = $req->name;
@@ -82,8 +96,9 @@ class MedicineController extends Controller
         $m->save();
         
         if($m){
-            session()->flash('msg','Medicine Updated');
-            return redirect()->route('medicinelist')->with ('m',$m);
+            $da=array("msg"=>"Medicine updated Successfull");
+            return response()->json($da);
+            
         }
         
     }

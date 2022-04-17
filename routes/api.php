@@ -7,6 +7,8 @@ use App\Http\Controllers\admindash;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\favcontroller;
+use App\Http\Controllers\pagescontroller;
+use App\Http\Controllers\mailController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -21,6 +23,27 @@ use App\Http\Controllers\favcontroller;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+//send email
+Route::get ('/send-email',[mailController::class,'sendEmail']);
+
+//send otp for password
+Route::post ('/OTPsend',[mailController::class,'ForgetEmail']);
+Route::post ('/forgetpassword',[mailController::class,'Forgetpassword']);
+
+//change password
+Route::post('/Changepassword',[PagesController::class,'Changepassubmit']);
+
+//user location
+Route::get('location/details',[PagesController::class,'location']);
+
+//admin home
+Route::get('/admin/home',[admindash::class,'adminhome'])->name('admin.home');
+
+//login
+Route::post('/login',[PagesController::class,'loginsubmit'])->name('login');
+
+//admin registration
+Route::post('/admin/registration',[admindash::class,'registersubmit'])->name('register.submit');
 
 //coupon api crud
 Route::post('/admin/cupon',[admindash::class,'cuponsubmit'])->name('cupon');
@@ -43,3 +66,12 @@ Route::post('/customer/add-to-fav/list',[favcontroller::class, 'addfevlist'])->n
 //search product
 Route::post('/customer/medicine/search',[MedicineController::class, 'medicinesearch'])->name('med.sr');
 
+//medicine crud
+Route::post('/admin/addmedicine',[MedicineController::class,'addmedicine']);
+Route::post('/admin/medicinesdel',[MedicineController::class,'delete']);
+Route::post('/admin/medicinesedit',[MedicineController::class,'updatemedicine']);
+Route::get('/medicinelist',[MedicineController::class,'listmedicine']);
+
+//order list
+Route::get('/orderlist',[OrderController::class,'orderlist']);
+Route::post('/customer/order',[OrderController::class, 'ordermedicine']);

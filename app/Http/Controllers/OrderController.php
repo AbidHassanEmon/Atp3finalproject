@@ -6,17 +6,25 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\Medicine;
 use App\Models\cupon;
+use Validator;
 
 class OrderController extends Controller
 {
-    //
-
+    
     public function ordermedicine(Request $req){
-        $req->validate([
+
+    //unit,cus_id,id(medicine),cupon(optional) 
+
+        $valid=Validator::make($req->all(),
+        [
             'unit'=>'required|numeric'
         ]);
+        if($valid->fails())
+        {
+            return response()->json(['error'=>$valid->errors()],405);
+        }
 
-        $customer_id = Session::get('loged')['id'];
+        $customer_id = $req->cus_id;
         $discount=0;
         if($req->cupon)
         {
@@ -31,8 +39,6 @@ class OrderController extends Controller
             }
         }
         
-        
-        
         $medicine = Medicine::where('id',$req->id)->first();
         $medicine->stock = $medicine->stock-$req->unit;
         $medicine->save();
@@ -44,15 +50,19 @@ class OrderController extends Controller
         $order->order_quantity = $req->unit;
         $order->total_price = ($medicine->unit_price*$req->unit)-$discount;
 
-        $order->save();
+        $em = $order->save();
 
-        return view('ordermedicine')->with('medicine',$medicine)->with('order',$order)->with('discount',$discount);
+        if($em){
+
+            $da=array("msg"=>" Order placed with discount ".$discount."tk");
+            return response()->json($da);
+        }
     }
 
     public function orderlist(){
 
         $order = Order::all();
-        return view ('orderlist')->with('order',$order);
+        return response()->json($order);
     }
 
 

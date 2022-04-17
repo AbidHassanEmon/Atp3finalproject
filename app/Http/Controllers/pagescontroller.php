@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Validator;
 use Illuminate\Http\Request;
 use App\Models\customer;
 use Session;
@@ -21,38 +21,32 @@ class pagescontroller extends Controller
 
     public function loginsubmit(Request $st)
     {
-        $this->validate($st,
+        $valid=Validator::make($st->all(),
         [
-            'username'=>'required|min:5|max:20',
-            'password'=>'required|min:4', 
-        ],
-        [   'username.required'=>'Please provide username',
-            'username.max'=>'Username must not exceed 20 alphabets',
-        ]
-    );
-    $val=customer::where('username',$st->username)->where('password',md5($st->password))->first();
+            'uname'=>'required',
+            'pass'=>'required'
+        ]);
+    if($valid->fails())
+    {
+        return response()->json(['error'=>$valid->errors()],401);
+    }
+
+
+    $val=customer::where('username',$st->uname)->where('password',md5($st->pass))->first();
 
     if($val)
     {
-       Session()->put('loged',['uname'=>$val->name,'id'=>$val->id]);
-       session()->flash('msg','login successful');
-        if($val->role =='admin')
-        {
-            return redirect()->route('admin.home');
-        }
-        else
-        {
-            return redirect()->route('customer.home');
-        }
+        $da=array("login"=>true,"role"=>$val->role);
+            return response()->json($da);
+       
     }
     else
     {
-        Session()->flash('msg','Invalid Username or Password');
-        return redirect()->route('login');
+        $da=array("login"=>false);
+        return response()->json($da);  
     }
     
-
-    }
+ }
 
 
     public function Changepass()
@@ -62,20 +56,43 @@ class pagescontroller extends Controller
 
     public function Changepassubmit(Request $si)
     {
-        $this->validate($si,
+        $valid=Validator::make($si->all(),
         [
             'pass'=>'required|min:5|max:20',
             'npass'=>'required|same:pass', 
-        ],
-        [   'pass.required'=>'Please provide new password',
-            'napss.same'=>'Password and confirm password must match',
         ]
     );
-    
-     customer::where('ID',Session::get('loged')['id'])->update(['password'=>md5($si->pass)]);
-     session()->flash('msg','Change password successful');
-        return redirect()->route('logout'); 
+    if($valid->fails())
+    {
+        return response()->json(['error'=>$valid->errors()],401);
     }
+    
+     $si=customer::where('ID',$si->id)->update(['password'=>md5($si->pass)]);
+    if($si)
+    {
+        $da=array("msg"=>"Change password Successful");
+        return response()->json($da);
+    }
+    else
+    {
+        $da=array("msg"=>"Change password Unsuccessful");
+        return response()->json($da);
+
+    }
+     
+      
+}
+
+public function location()
+    {
+
+        $ip = '103.97.162.38';
+        //request()->ip();
+        $data = \Location::get($ip);
+       return $data;
+       
+    }
+    
 
 
 }

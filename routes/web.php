@@ -33,7 +33,7 @@ Route::get('/logout',[PagesController::class,'logout'])->name('logout');
 Route::get('/Changepass',[PagesController::class,'Changepass'])->name('Changepass')->middleware('authorized');
 Route::post('/Changepassw',[PagesController::class,'Changepassubmit'])->name('Changepassword')->middleware('authorized');
 
-Route::get('/admin/home',[admindash::class,'adminhome'])->name('admin.home')->middleware('authorized');
+Route::get('/admin/home',[admindash::class,'adminhome'])->name('admin.home');
 Route::get('/admin/cupon',[admindash::class,'managecupon'])->name('cupon')->middleware('authorized');
 Route::post('/admin/cupon',[admindash::class,'cuponsubmit'])->name('cupon')->middleware('authorized');
 Route::get('/admin/cuponslist',[admindash::class,'managecuponlist'])->name('cuponslist')->middleware('authorized');

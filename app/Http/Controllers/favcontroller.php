@@ -5,13 +5,24 @@ use App\Models\fav;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Session;
-
+use Validator;
 
 class favcontroller extends Controller
 {
     //
     public function addfev(Request $r)
     {
+
+        $valid=Validator::make($r->all(),
+        [
+            'product_id'=>'required',
+            'id'=>'required'
+        ]);
+    if($valid->fails())
+    {
+        return response()->json(['error'=>$valid->errors()],401);
+    }
+
         $fav=new fav;
         $fav->product_id=$r->product_id;
         $fav->user_id=$r->id;
